@@ -35,7 +35,7 @@
           "clippy"
           "rust-analyzer"
           "rustc"
-
+          "rustfmt"
         ];
 
         bevy-runtime-deps = with pkgs; [
