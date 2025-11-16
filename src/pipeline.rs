@@ -7,6 +7,7 @@ use bevy::render::renderer::RenderDevice;
 #[derive(Resource)]
 pub struct SurfaceNetsGpuPipeline {
     pub generate_vertices_pipeline: CachedComputePipelineId,
+    pub prefix_sum_pipeline: CachedComputePipelineId,
     pub compact_vertices_pipeline: CachedComputePipelineId,
     pub generate_faces_pipeline: CachedComputePipelineId,
     pub compact_faces_pipeline: CachedComputePipelineId,
@@ -51,6 +52,7 @@ impl FromWorld for SurfaceNetsGpuPipeline {
 
         // Load shaders
         let generate_vertices_shader = asset_server.load("shaders/generate_vertices.wgsl");
+        let prefix_sum_shader = asset_server.load("shaders/prefix_sum.wgsl");
         let compact_vertices_shader = asset_server.load("shaders/compact_vertices.wgsl");
         let generate_faces_shader = asset_server.load("shaders/generate_faces.wgsl");
         let compact_faces_shader = asset_server.load("shaders/compact_faces.wgsl");
@@ -61,6 +63,15 @@ impl FromWorld for SurfaceNetsGpuPipeline {
                 label: Some("generate_vertices_pipeline".into()),
                 layout: vec![bind_group_layout.clone()],
                 shader: generate_vertices_shader,
+                entry_point: Some("main".into()),
+                ..default()
+            });
+
+        let prefix_sum_pipeline =
+            pipeline_cache.queue_compute_pipeline(ComputePipelineDescriptor {
+                label: Some("prefix_sum_pipeline".into()),
+                layout: vec![bind_group_layout.clone()],
+                shader: prefix_sum_shader,
                 entry_point: Some("main".into()),
                 ..default()
             });
@@ -94,6 +105,7 @@ impl FromWorld for SurfaceNetsGpuPipeline {
 
         Self {
             generate_vertices_pipeline,
+            prefix_sum_pipeline,
             compact_vertices_pipeline,
             generate_faces_pipeline,
             compact_faces_pipeline,
