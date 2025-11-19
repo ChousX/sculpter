@@ -6,11 +6,11 @@ use bevy::render::renderer::RenderDevice;
 use crate::bind_group::SurfaceNetsBindGroupLayouts;
 
 // Shader paths
-const GENERATE_VERTICES_SHADER: &str = "shaders/surface_nets/generate_vertices.wgsl";
-const PREFIX_SUM_SHADER: &str = "shaders/surface_nets/prefix_sum.wgsl";
-const COMPACT_VERTICES_SHADER: &str = "shaders/surface_nets/compact_vertices.wgsl";
-const GENERATE_FACES_SHADER: &str = "shaders/surface_nets/generate_faces.wgsl";
-const COMPACT_FACES_SHADER: &str = "shaders/surface_nets/compact_faces.wgsl";
+const GENERATE_VERTICES_SHADER: &str = "shaders/generate_vertices.wgsl";
+const PREFIX_SUM_SHADER: &str = "shaders/prefix_sum.wgsl";
+const COMPACT_VERTICES_SHADER: &str = "shaders/compact_vertices.wgsl";
+const GENERATE_FACES_SHADER: &str = "shaders/generate_faces.wgsl";
+const COMPACT_FACES_SHADER: &str = "shaders/compact_faces.wgsl";
 
 #[derive(Resource)]
 pub struct SurfaceNetsPipelines {
