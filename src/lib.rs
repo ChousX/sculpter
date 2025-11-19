@@ -21,6 +21,10 @@ mod node;
 mod pipeline;
 mod readback;
 
+pub mod prelude {
+    pub use crate::{DensityField, DensityFieldMeshSize, DensityFieldSize, SculpterPlugin};
+}
+
 pub struct SculpterPlugin;
 impl Plugin for SculpterPlugin {
     fn build(&self, app: &mut App) {
