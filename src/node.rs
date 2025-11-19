@@ -19,7 +19,7 @@ pub struct SurfaceNetsNode;
 impl render_graph::Node for SurfaceNetsNode {
     fn run<'w>(
         &self,
-        graph: &mut render_graph::RenderGraphContext,
+        _graph: &mut render_graph::RenderGraphContext,
         render_context: &mut RenderContext<'w>,
         world: &'w World,
     ) -> std::result::Result<(), render_graph::NodeRunError> {

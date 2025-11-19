@@ -1,10 +1,6 @@
 use bevy::{
-    ecs::event,
     prelude::*,
-    render::{
-        gpu_readback::{Readback, ReadbackComplete},
-        storage::ShaderStorageBuffer,
-    },
+    render::gpu_readback::{Readback, ReadbackComplete},
 };
 
 use crate::buffers::SurfaceNetsBuffers;
