@@ -30,7 +30,7 @@ pub struct SurfaceNetsBindGroupLayouts {
     pub compact_faces: BindGroupLayout,
 }
 
-fn prepare_bind_groups(
+pub fn prepare_bind_groups(
     mut commands: Commands,
     layouts: Res<SurfaceNetsBindGroupLayouts>,
     entities_needing_bind_groups: Query<

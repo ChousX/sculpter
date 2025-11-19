@@ -14,20 +14,22 @@ use crate::{
 const WORKGROUP_SIZE: u32 = 8;
 
 #[derive(Default)]
-struct SurfaceNetsNode;
+pub struct SurfaceNetsNode;
 
 impl render_graph::Node for SurfaceNetsNode {
-    fn run(
+    fn run<'w>(
         &self,
-        _graph: &mut render_graph::RenderGraphContext,
-        render_context: &mut RenderContext,
-        world: &World,
-    ) -> Result<(), render_graph::NodeRunError> {
+        graph: &mut render_graph::RenderGraphContext,
+        render_context: &mut RenderContext<'w>,
+        world: &'w World,
+    ) -> std::result::Result<(), render_graph::NodeRunError> {
         let pipeline_cache = world.resource::<PipelineCache>();
         let pipelines = world.resource::<SurfaceNetsPipelines>();
 
         // Query all entities with both buffers and bind groups ready
-        let mut query = world.query::<(&SurfaceNetsBuffers, &SurfaceNetsBindGroups)>();
+        let mut query = world
+            .try_query::<(&SurfaceNetsBuffers, &SurfaceNetsBindGroups)>()
+            .unwrap();
 
         let mut pass =
             render_context

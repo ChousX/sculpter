@@ -46,16 +46,20 @@ impl SurfaceNetsBuffers {
         density_buffer.buffer_description.usage |= BufferUsages::STORAGE;
 
         // Stage 1 buffers: Generate Vertices
-        let vertices_buffer = ShaderStorageBuffer::from(vec![0.0f32; (cell_count * 3) as usize]);
+        let mut vertices_buffer =
+            ShaderStorageBuffer::from(vec![0.0f32; (cell_count * 3) as usize]);
         let vertex_valid_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
+        vertices_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
 
         // Stage 2 buffers: Prefix Sum (vertices)
         let vertex_indices_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
-        let vertex_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
+        let mut vertex_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
+        vertex_count_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
 
         // Stage 3 buffers: Compact Vertices
-        let compacted_vertices_buffer =
+        let mut compacted_vertices_buffer =
             ShaderStorageBuffer::from(vec![0.0f32; (cell_count * 3) as usize]);
+        compacted_vertices_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
 
         // Stage 4 buffers: Generate Faces
         let faces_buffer = ShaderStorageBuffer::from(vec![0u32; (max_faces * 4) as usize]);
@@ -63,11 +67,13 @@ impl SurfaceNetsBuffers {
 
         // Stage 5 buffers: Prefix Sum (faces)
         let face_indices_buffer = ShaderStorageBuffer::from(vec![0u32; max_faces as usize]);
-        let face_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
+        let mut face_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
+        face_count_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
 
         // Stage 6 buffers: Compact Faces
-        let compacted_faces_buffer =
+        let mut compacted_faces_buffer =
             ShaderStorageBuffer::from(vec![0u32; (max_faces * 4) as usize]);
+        compacted_faces_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
 
         SurfaceNetsBuffers {
             density_field: buffers.add(density_buffer),
@@ -83,5 +89,20 @@ impl SurfaceNetsBuffers {
             compacted_faces: buffers.add(compacted_faces_buffer),
             dimensions: *dimensions,
         }
+    }
+}
+
+/// Prepare Buffers (per entity)
+pub fn prepare_surface_nets_buffers(
+    mut commands: Commands,
+    // Query entities that have DensityField but no Mesh3d
+    needs_mesh_query: Query<(Entity, &DensityField), Without<Mesh3d>>,
+    dimensions: Res<DensityFieldSize>,
+    mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
+) {
+    for (entity, density_field) in needs_mesh_query.iter() {
+        // Create GPU buffers to start generation
+        let buffers = SurfaceNetsBuffers::new(density_field, &dimensions, &mut buffers);
+        commands.entity(entity).insert(buffers);
     }
 }

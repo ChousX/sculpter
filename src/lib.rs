@@ -1,34 +1,55 @@
 use bevy::{
     prelude::*,
     render::{
-        RenderApp,
+        Render, RenderApp, RenderStartup, RenderSystems,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
         extract_resource::ExtractResource,
-        render_graph::RenderLabel,
-        render_resource::{CommandEncoderDescriptor, ComputePassDescriptor, PipelineCache},
-        renderer::{RenderDevice, RenderQueue},
-        storage::ShaderStorageBuffer,
+        render_graph::{RenderGraph, RenderLabel},
     },
 };
 
-use crate::{buffers::SurfaceNetsBuffers, pipeline::SurfaceNetsPipelines};
+use crate::{
+    bind_group::prepare_bind_groups, buffers::prepare_surface_nets_buffers,
+    mesh::build_mesh_from_readback, node::SurfaceNetsNode, pipeline::init_surface_nets_pipelines,
+    readback::setup_readback_for_new_fields,
+};
 
 mod bind_group;
 mod buffers;
+mod mesh;
 mod node;
 mod pipeline;
+mod readback;
 
 pub struct SculpterPlugin;
 impl Plugin for SculpterPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DensityFieldSize>()
             .init_resource::<DensityFieldMeshSize>()
-            .add_plugins(ExtractComponentPlugin::<DensityField>::default());
+            .add_plugins(ExtractComponentPlugin::<DensityField>::default())
+            .add_systems(
+                Update,
+                (setup_readback_for_new_fields, build_mesh_from_readback).chain(),
+            );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             error!("Failed to get render app");
             return;
         };
+
+        render_app
+            .add_systems(RenderStartup, init_surface_nets_pipelines)
+            .add_systems(
+                Render,
+                (
+                    prepare_surface_nets_buffers.in_set(RenderSystems::PrepareResources),
+                    prepare_bind_groups.in_set(RenderSystems::PrepareBindGroups),
+                )
+                    .chain(),
+            );
+        let mut render_graph = render_app.world_mut().resource_mut::<RenderGraph>();
+        render_graph.add_node(SurfaceNetsLabel, SurfaceNetsNode::default());
+        render_graph.add_node_edge(SurfaceNetsLabel, bevy::render::graph::CameraDriverLabel);
     }
 }
 
@@ -54,7 +75,7 @@ impl DensityFieldSize {
 
 impl Default for DensityFieldSize {
     fn default() -> Self {
-        Self(uvec3(10, 10, 10))
+        Self(uvec3(32, 32, 32))
     }
 }
 
@@ -71,18 +92,3 @@ pub struct DensityField(pub Vec<f32>);
 
 #[derive(Component, Debug)]
 pub struct MeshGenerationTarget(pub Entity);
-
-/// Prepare Buffers (per entity)
-fn prepare_surface_nets_buffers(
-    mut commands: Commands,
-    // Query entities that have DensityField but no Mesh3d
-    needs_mesh_query: Query<(Entity, &DensityField), Without<Mesh3d>>,
-    dimensions: Res<DensityFieldSize>,
-    mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
-) {
-    for (entity, density_field) in needs_mesh_query.iter() {
-        // Create GPU buffers to start generation
-        let buffers = SurfaceNetsBuffers::new(density_field, &dimensions, &mut buffers);
-        commands.entity(entity).insert(buffers);
-    }
-}
