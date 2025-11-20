@@ -43,37 +43,54 @@ impl SurfaceNetsBuffers {
 
         // Create density field buffer
         let mut density_buffer = ShaderStorageBuffer::from(density_field.0.clone());
-        density_buffer.buffer_description.usage |= BufferUsages::STORAGE;
+        density_buffer.buffer_description.usage |= BufferUsages::STORAGE | BufferUsages::COPY_DST;
 
         // Stage 1 buffers: Generate Vertices
         let mut vertices_buffer =
             ShaderStorageBuffer::from(vec![0.0f32; (cell_count * 3) as usize]);
-        let vertex_valid_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
-        vertices_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
+        vertices_buffer.buffer_description.usage |= BufferUsages::STORAGE | BufferUsages::COPY_SRC;
+
+        let mut vertex_valid_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
+        vertex_valid_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC;
 
         // Stage 2 buffers: Prefix Sum (vertices)
-        let vertex_indices_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
+        let mut vertex_indices_buffer = ShaderStorageBuffer::from(vec![0u32; cell_count as usize]);
+        vertex_indices_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC | BufferUsages::COPY_DST;
+
         let mut vertex_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
-        vertex_count_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
+        vertex_count_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC | BufferUsages::COPY_DST;
 
         // Stage 3 buffers: Compact Vertices
         let mut compacted_vertices_buffer =
             ShaderStorageBuffer::from(vec![0.0f32; (cell_count * 3) as usize]);
-        compacted_vertices_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
+        compacted_vertices_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC;
 
         // Stage 4 buffers: Generate Faces
-        let faces_buffer = ShaderStorageBuffer::from(vec![0u32; (max_faces * 4) as usize]);
-        let face_valid_buffer = ShaderStorageBuffer::from(vec![0u32; max_faces as usize]);
+        let mut faces_buffer = ShaderStorageBuffer::from(vec![0u32; (max_faces * 4) as usize]);
+        faces_buffer.buffer_description.usage |= BufferUsages::STORAGE | BufferUsages::COPY_SRC;
+
+        let mut face_valid_buffer = ShaderStorageBuffer::from(vec![0u32; max_faces as usize]);
+        face_valid_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC;
 
         // Stage 5 buffers: Prefix Sum (faces)
-        let face_indices_buffer = ShaderStorageBuffer::from(vec![0u32; max_faces as usize]);
+        let mut face_indices_buffer = ShaderStorageBuffer::from(vec![0u32; max_faces as usize]);
+        face_indices_buffer.buffer_description.usage =
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC | BufferUsages::COPY_DST;
+
         let mut face_count_buffer = ShaderStorageBuffer::from(vec![0u32; 1]);
-        face_count_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
+        face_count_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC | BufferUsages::COPY_DST;
 
         // Stage 6 buffers: Compact Faces
         let mut compacted_faces_buffer =
             ShaderStorageBuffer::from(vec![0u32; (max_faces * 4) as usize]);
-        compacted_faces_buffer.buffer_description.usage |= BufferUsages::COPY_SRC;
+        compacted_faces_buffer.buffer_description.usage |=
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC;
 
         SurfaceNetsBuffers {
             density_field: buffers.add(density_buffer),
@@ -92,11 +109,14 @@ impl SurfaceNetsBuffers {
     }
 }
 
-/// Prepare Buffers (per entity)
+/// Prepare Buffers (per entResMut<Assets<ShaderStorageBuffer>>ity)
 pub fn prepare_surface_nets_buffers(
     mut commands: Commands,
     // Query entities that have DensityField but no Mesh3d
-    needs_mesh_query: Query<(Entity, &DensityField), Without<Mesh3d>>,
+    needs_mesh_query: Query<
+        (Entity, &DensityField),
+        Or<(Without<SurfaceNetsBuffers>, Without<Mesh3d>)>,
+    >,
     dimensions: Res<DensityFieldSize>,
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
 ) {

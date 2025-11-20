@@ -3,7 +3,7 @@ use bevy::{
     render::{
         Render, RenderApp, RenderStartup, RenderSystems,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
-        extract_resource::ExtractResource,
+        extract_resource::{ExtractResource, ExtractResourcePlugin},
         render_graph::{RenderGraph, RenderLabel},
     },
 };
@@ -30,10 +30,18 @@ impl Plugin for SculpterPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DensityFieldSize>()
             .init_resource::<DensityFieldMeshSize>()
-            .add_plugins(ExtractComponentPlugin::<DensityField>::default())
+            .add_plugins((
+                ExtractComponentPlugin::<DensityField>::default(),
+                ExtractResourcePlugin::<DensityFieldSize>::default(),
+            ))
             .add_systems(
                 Update,
-                (setup_readback_for_new_fields, build_mesh_from_readback).chain(),
+                (
+                    prepare_surface_nets_buffers,
+                    setup_readback_for_new_fields,
+                    build_mesh_from_readback,
+                )
+                    .chain(),
             );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -46,7 +54,7 @@ impl Plugin for SculpterPlugin {
             .add_systems(
                 Render,
                 (
-                    prepare_surface_nets_buffers.in_set(RenderSystems::PrepareResources),
+                    //prepare_surface_nets_buffers.in_set(RenderSystems::PrepareResources),
                     prepare_bind_groups.in_set(RenderSystems::PrepareBindGroups),
                 )
                     .chain(),

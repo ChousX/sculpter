@@ -20,6 +20,13 @@ var<storage, read_write> face_valid: array<u32>;  // Output: which face slots ar
 @group(0) @binding(4)
 var<uniform> dimensions: vec3<u32>;  // Grid dimensions
 
+// ===========================================================
+// Helper function MUST be at global scope in WGSL
+// ===========================================================
+fn get_cell_index(x: u32, y: u32, z: u32) -> u32 {
+    return x + y * dimensions.x + z * dimensions.x * dimensions.y;
+}
+
 // STEP 2: Define workgroup size
 // 8x8x8 = 512 threads per workgroup for 3D grid processing
 @compute @workgroup_size(8, 8, 8)
@@ -50,11 +57,7 @@ fn generate_faces(
     
     // STEP 7: Get the compacted vertex index for this cell
     let v0 = vertex_indices[cell_index];
-    
-    // STEP 8: Helper function to convert 3D coordinates to cell index
-    fn get_cell_index(x: u32, y: u32, z: u32) -> u32 {
-        return x + y * dimensions.x + z * dimensions.x * dimensions.y;
-    }
+   
     
     // STEP 9: Calculate base face index for this cell
     // Each cell can generate up to 3 faces, so we reserve 3 slots per cell

@@ -49,7 +49,7 @@ pub fn setup_readback_for_new_fields(
             .id();
 
         let vertices_entity = commands
-            .spawn(Readback::buffer(buffers.vertex_count.clone()))
+            .spawn(Readback::buffer(buffers.vertices.clone()))
             .observe(
                 |event: On<ReadbackComplete>,
                  children_of: Query<&ChildOf>,
@@ -72,7 +72,7 @@ pub fn setup_readback_for_new_fields(
             )
             .id();
         let face_count_entity = commands
-            .spawn(Readback::buffer(buffers.vertex_count.clone()))
+            .spawn(Readback::buffer(buffers.face_count.clone()))
             .observe(
                 |event: On<ReadbackComplete>,
                  children_of: Query<&ChildOf>,
@@ -97,7 +97,7 @@ pub fn setup_readback_for_new_fields(
             )
             .id();
         let faces_entity = commands
-            .spawn(Readback::buffer(buffers.vertex_count.clone()))
+            .spawn(Readback::buffer(buffers.faces.clone()))
             .observe(
                 |event: On<ReadbackComplete>,
                  children_of: Query<&ChildOf>,

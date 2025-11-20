@@ -18,6 +18,14 @@ var<storage, read_write> vertex_valid: array<u32>;  // Output validity flags (1 
 @group(0) @binding(3)
 var<uniform> dimensions: vec3<u32>;  // Grid dimensions (x, y, z)
 
+// ===========================================================
+// Helper function MUST be at global scope in WGSL
+// ===========================================================
+    fn sample_density(x: u32, y: u32, z: u32) -> f32 {
+        let index = x + y * dimensions.x + z * dimensions.x * dimensions.y;
+        return density_field[index];
+    }
+
 // STEP 2: Define workgroup size
 // Must match the WORKGROUP_SIZE constant in Rust (8x8x8 = 512 threads per workgroup)
 @compute @workgroup_size(8, 8, 8)
@@ -45,12 +53,7 @@ fn generate_vertices(
     // Formula: z * (width * height) + y * width + x
     let cell_index = cell_x + cell_y * dimensions.x + cell_z * dimensions.x * dimensions.y;
     
-    // STEP 6: Helper function to get density value at a grid point
-    // This samples the scalar field at position (x, y, z)
-    fn sample_density(x: u32, y: u32, z: u32) -> f32 {
-        let index = x + y * dimensions.x + z * dimensions.x * dimensions.y;
-        return density_field[index];
-    }
+
     
     // STEP 7: Define the 8 corners of this cell
     // A cell is a cube, and we need to check all 8 corners
