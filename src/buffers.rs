@@ -1,11 +1,11 @@
-use bevy::prelude::*;
 use bevy::render::render_resource::*;
 use bevy::render::storage::ShaderStorageBuffer;
+use bevy::{prelude::*, render::extract_component::ExtractComponent};
 
 use crate::{DensityField, DensityFieldSize};
 
 // Component that holds GPU buffers during generation (one per generating entity)
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct SurfaceNetsBuffers {
     // Stage 0: Inputs
     pub density_field: Handle<ShaderStorageBuffer>,
@@ -30,6 +30,18 @@ pub struct SurfaceNetsBuffers {
     pub face_indices: Handle<ShaderStorageBuffer>,
     pub face_count: Handle<ShaderStorageBuffer>,
     pub compacted_faces: Handle<ShaderStorageBuffer>,
+}
+
+impl ExtractComponent for SurfaceNetsBuffers {
+    type QueryData = &'static SurfaceNetsBuffers;
+    type QueryFilter = ();
+    type Out = Self;
+
+    fn extract_component(
+        item: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>,
+    ) -> Option<Self> {
+        Some(item.clone())
+    }
 }
 
 impl SurfaceNetsBuffers {
@@ -115,7 +127,7 @@ pub fn prepare_surface_nets_buffers(
     // Query entities that have DensityField but no Mesh3d
     needs_mesh_query: Query<
         (Entity, &DensityField),
-        Or<(Without<SurfaceNetsBuffers>, Without<Mesh3d>)>,
+        (Without<SurfaceNetsBuffers>, Without<Mesh3d>),
     >,
     dimensions: Res<DensityFieldSize>,
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,

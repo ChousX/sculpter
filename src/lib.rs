@@ -9,8 +9,11 @@ use bevy::{
 };
 
 use crate::{
-    bind_group::prepare_bind_groups, buffers::prepare_surface_nets_buffers,
-    mesh::build_mesh_from_readback, node::SurfaceNetsNode, pipeline::init_surface_nets_pipelines,
+    bind_group::prepare_bind_groups,
+    buffers::{SurfaceNetsBuffers, prepare_surface_nets_buffers},
+    mesh::build_mesh_from_readback,
+    node::SurfaceNetsNode,
+    pipeline::init_surface_nets_pipelines,
     readback::setup_readback_for_new_fields,
 };
 
@@ -33,6 +36,7 @@ impl Plugin for SculpterPlugin {
             .add_plugins((
                 ExtractComponentPlugin::<DensityField>::default(),
                 ExtractResourcePlugin::<DensityFieldSize>::default(),
+                ExtractComponentPlugin::<SurfaceNetsBuffers>::default(),
             ))
             .add_systems(
                 Update,
