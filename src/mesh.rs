@@ -23,6 +23,8 @@ pub fn build_mesh_from_readback(
             continue;
         };
 
+        info!("Building Mesh from readback buffers");
+
         let scale = **mesh_size / dimensions.as_vec3();
         let mut world_positions = Vec::with_capacity(vertex_count as usize);
         for i in 0..vertex_count as usize {
@@ -33,6 +35,8 @@ pub fn build_mesh_from_readback(
                 world_positions.push([world_pos.x, world_pos.y, world_pos.z]);
             }
         }
+
+        info!("Vertices: {world_positions:?}");
 
         let mut triangle_indices = Vec::with_capacity(face_count as usize * 6);
         for i in 0..face_count as usize {
@@ -54,7 +58,11 @@ pub fn build_mesh_from_readback(
             }
         }
 
+        info!("TriangleIndices: {triangle_indices:?}");
+
         let normals = compute_flat_normals(&world_positions, &triangle_indices);
+
+        info!("Normals: {normals:?}");
 
         let mut mesh = Mesh::new(
             bevy::mesh::PrimitiveTopology::TriangleList,

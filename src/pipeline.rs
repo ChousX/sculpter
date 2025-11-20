@@ -163,4 +163,6 @@ pub fn init_surface_nets_pipelines(
         generate_faces: generate_faces_layout,
         compact_faces: compact_faces_layout,
     });
+
+    info!("SurfaceNetsPipelines Inited");
 }

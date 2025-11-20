@@ -121,6 +121,11 @@ pub fn prepare_surface_nets_buffers(
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
 ) {
     for (entity, density_field) in needs_mesh_query.iter() {
+        info!("Generation of DensityField to Mesh3d Starting for Entity:{entity}");
+
+        #[cfg(feature = "density_field_verbose")]
+        info!("Entity:{entity}\nDensityField:{density_field:?}");
+
         // Create GPU buffers to start generation
         let buffers = SurfaceNetsBuffers::new(density_field, &dimensions, &mut buffers);
         commands.entity(entity).insert(buffers);

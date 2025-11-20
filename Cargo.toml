@@ -31,6 +31,19 @@ dev_native = [
     "bevy/embedded_watcher",
 ]
 
+verbose = [
+  "density_field_verbose",
+  "verbose_readback"
+]
+
+readback = ["verbose_readback_vertex_count", "verbose_readback_face_count"]
+verbose_readback = ["verbose_readback_vertex_count", "verbose_readback_vertices", "verbose_readback_face_count", "verbose_readback_faces"]
+verbose_readback_vertex_count = []
+verbose_readback_vertices = []
+verbose_readback_face_count = []
+verbose_readback_faces = []
+
+density_field_verbose = []
 
 [package.metadata.bevy_cli.release]
 # Disable dev features for release builds.

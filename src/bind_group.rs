@@ -161,5 +161,7 @@ pub fn prepare_bind_groups(
             prefix_sum_faces: prefix_sum_faces_bg,
             compact_faces: compact_faces_bg,
         });
+
+        info!("BindGroup prepared for Entity:{entity}");
     }
 }

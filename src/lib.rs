@@ -57,11 +57,7 @@ impl Plugin for SculpterPlugin {
             .add_systems(RenderStartup, init_surface_nets_pipelines)
             .add_systems(
                 Render,
-                (
-                    //prepare_surface_nets_buffers.in_set(RenderSystems::PrepareResources),
-                    prepare_bind_groups.in_set(RenderSystems::PrepareBindGroups),
-                )
-                    .chain(),
+                (prepare_bind_groups.in_set(RenderSystems::PrepareBindGroups)).chain(),
             );
         let mut render_graph = render_app.world_mut().resource_mut::<RenderGraph>();
         render_graph.add_node(SurfaceNetsLabel, SurfaceNetsNode::default());
