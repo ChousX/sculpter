@@ -5,7 +5,7 @@ use bevy::{prelude::*, render::extract_component::ExtractComponent};
 use crate::{DensityField, DensityFieldSize};
 
 // Component that holds GPU buffers during generation (one per generating entity)
-#[derive(Component, Clone)]
+#[derive(Component, Clone, ExtractComponent)]
 pub struct SurfaceNetsBuffers {
     // Stage 0: Inputs
     pub density_field: Handle<ShaderStorageBuffer>,
@@ -30,18 +30,6 @@ pub struct SurfaceNetsBuffers {
     pub face_indices: Handle<ShaderStorageBuffer>,
     pub face_count: Handle<ShaderStorageBuffer>,
     pub compacted_faces: Handle<ShaderStorageBuffer>,
-}
-
-impl ExtractComponent for SurfaceNetsBuffers {
-    type QueryData = &'static SurfaceNetsBuffers;
-    type QueryFilter = ();
-    type Out = Self;
-
-    fn extract_component(
-        item: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>,
-    ) -> Option<Self> {
-        Some(item.clone())
-    }
 }
 
 impl SurfaceNetsBuffers {
