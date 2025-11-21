@@ -58,6 +58,7 @@
         bevy-build-deps = with pkgs; [
           clang
           lld
+          wgsl-analyzer
         ];
       in
         f {
